@@ -1,2 +1,2 @@
 # icicSimOpt
-input: scenario output: possible allocation throughput result
+Need only input scenario, it will show all possible allocation result.
