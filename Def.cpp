@@ -47,6 +47,79 @@ bool readInput(char* ptr, vector<baseStation> &BS_list){
         tmp.clear();
     }
     
+    // Read Pa command //
+    for(int i=0;i<BSnum;i++){
+        getline(infile,tmpline);
+        for(int j=0;j<tmpline.length();j++){
+            BS_list[i].RB_pa.push_back(tmpline[j]-'0');
+        }
+    }
+    
+    // Read UE Input //
+    int UEnum=0;
+    Position pType;
+    for(int i=0;i<BSnum;i++){
+        // Read each BS's UE num //
+        getline(infile,tmpline);
+        UEnum=atoi(tmpline.c_str());
+        // Push UE info to UE_list //
+        for(int j=0;j<UEnum;j++){
+            getline(infile,tmpline);
+            stringstream element(tmpline);
+            
+            while(getline(element,field,',')){
+                tmp.push_back(atof(field.c_str()));
+            }
+            
+            switch((int)tmp[2]) {
+                case 0:
+                    pType=CENTER;
+                    break;
+                case 1:
+                    pType=MIDDLE;
+                    break;
+                case 2:
+                    pType=EDGE;
+                    break;
+                default:
+                    cout<<"[ERROR] Position of UE invaild"<<endl;
+                    return false;
+                    break;
+            }
+            
+            BS_list[i].UE_list.push_back(UE(BS_list[i].x+tmp[0],BS_list[i].y+tmp[1],pType,tmp[3]));
+            tmp.clear();
+        }
+    }
+    return true;
+}
+
+bool readInputOpt(char* ptr, vector<baseStation> &BS_list){
+    // Read BS Input //
+    ifstream infile;
+    infile.open(ptr,ifstream::in);
+    
+    string tmpline;
+    // First line: BSnum //
+    getline(infile,tmpline);
+    int BSnum=atoi(tmpline.c_str());
+    
+    // Next BSnum lines: BS info. //
+    vector<double> tmp;
+    string field;
+    
+    for(int i=0;i<BSnum;i++){
+        getline(infile,tmpline);
+        stringstream element(tmpline);
+        
+        while(getline(element,field,',')){
+            tmp.push_back(atof(field.c_str()));
+        }
+        
+        BS_list.push_back(baseStation(tmp[0],tmp[1],tmp[2]));
+        tmp.clear();
+    }
+    
     // Read UE Input //
     int UEnum=0;
     Position pType;
