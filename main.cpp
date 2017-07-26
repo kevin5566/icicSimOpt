@@ -14,6 +14,9 @@ int main(int argc, char* argv[]){
     // Generate possible command //
     cmdGenerate(BS_list,cmd);
     
+    // Calc RSRP //
+    calcRSRP(BS_list);
+    
     // Generate combination of command //
     MAX_round=cmdComboGen(cmd,cmdIdx);
     
