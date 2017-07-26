@@ -50,8 +50,12 @@ bool readInput(char* ptr, vector<baseStation> &BS_list){
     // Read Pa command //
     for(int i=0;i<BSnum;i++){
         getline(infile,tmpline);
+        if(tmpline.length()!=50){
+            cout<<"[ERROR] Pa Command length != 50"<<endl;
+            return false;
+        }
         for(int j=0;j<tmpline.length();j++){
-            BS_list[i].RB_pa.push_back(tmpline[j]-'0');
+            BS_list[i].RB_pa[j]=tmpline[j]-'0';
         }
     }
     
@@ -159,7 +163,7 @@ bool readInputOpt(char* ptr, vector<baseStation> &BS_list){
     return true;
 }
 
-void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &command) {
+void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &cmd) {
     int BSnum = BS_list.size();
     
     for (int i = 0; i < BSnum; i++) {
@@ -227,29 +231,39 @@ void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &command)
             BS_all_cmd.push_back(BScmd);
         }
         
-        command.push_back(BS_all_cmd);
+        cmd.push_back(BS_all_cmd);
     }
 }
 
-void cmdComboGen(vector< vector<string> > command, vector<vector<int> > &cmdIdx){
+int cmdComboGen(vector< vector<string> > cmd, vector<vector<int> > &cmdIdx){
     
     vector<int> carryout;
-    carryout.push_back(command[command.size()-1].size());
-    for(int i=0;i<command.size()-2;i++)
-        carryout.push_back(carryout[i]*command[command.size()-2-i].size());
+    carryout.push_back(cmd[cmd.size()-1].size());
+    for(int i=0;i<cmd.size()-2;i++)
+        carryout.push_back(carryout[i]*cmd[cmd.size()-2-i].size());
     reverse(carryout.begin(),carryout.end());
     
     int Combonum=1;
-    for(int i=0;i<command.size();i++){
-        Combonum=Combonum*command[i].size();
+    for(int i=0;i<cmd.size();i++){
+        Combonum=Combonum*cmd[i].size();
         vector<int> tmpidx;
         cmdIdx.push_back(tmpidx);
     }
     
     for(int i=0;i<Combonum;i++){
         for(int j=0;j<carryout.size();j++)
-            cmdIdx[j].push_back((i/carryout[j])%command[j].size());
+            cmdIdx[j].push_back((i/carryout[j])%cmd[j].size());
         cmdIdx[cmdIdx.size()-1].push_back(i%carryout[carryout.size()-1]);
+    }
+    
+    return Combonum;
+}
+
+void setPaCmd(vector<baseStation> &BS_list, vector< vector<string> > cmd, vector<vector<int> > cmdIdx, int round_idx){
+    for(int i=0;i<BS_list.size();i++){
+        for(int j=0;j<50;j++){
+            BS_list[i].RB_pa[j]=cmd[i][cmdIdx[i][round_idx]][j]-'0';
+        }
     }
 }
 
@@ -305,7 +319,7 @@ void RBalloc(vector<baseStation> &BS_list){
                         continue;
                     if(BS_list[i].sub_alloc[l]!=-1)
                         continue;
-                    nowRB_num_UE_get=nowRB_num_UE_get+3;
+                    nowRB_num_UE_get=nowRB_num_UE_get+2;
                     // Specify BS RB alloc to which UE //
                     BS_list[i].sub_alloc[l]=sched_UE_list[k];
                     BS_list[i].sub_alloc[l+1]=sched_UE_list[k];
@@ -320,6 +334,7 @@ void RBalloc(vector<baseStation> &BS_list){
                     BS_list[i].UE_list[sched_UE_list[k]].subbandMask[l+1]=1;
                     if(l+2==50)
                         break;
+                    nowRB_num_UE_get=nowRB_num_UE_get+1;
                     BS_list[i].sub_alloc[l+2]=sched_UE_list[k];
                     BS_list[i].sub_P[l+2]=BS_list[i].sub_P[l+2]+pa_level[BS_list[i].UE_list[sched_UE_list[k]].pa];
                     BS_list[i].RB_pa_actual[l+2]=BS_list[i].UE_list[sched_UE_list[k]].pa;
@@ -397,7 +412,7 @@ void calcsubSINR(vector<baseStation> &BS_list){
     }
 }
 
-void calcavgSINR(vector<baseStation> &BS_list, double &SINR_max, double &SINR_min){
+void calcavgSINR(vector<baseStation> &BS_list){
     double avg=0;
     for(int i=0;i<BS_list.size();i++){
         for(int j=0;j<BS_list[i].UE_list.size();j++){
@@ -407,10 +422,6 @@ void calcavgSINR(vector<baseStation> &BS_list, double &SINR_max, double &SINR_mi
             }
             avg=avg/(double)accumulate(BS_list[i].UE_list[j].subbandMask.begin(),BS_list[i].UE_list[j].subbandMask.end(),0);
             BS_list[i].UE_list[j].avgSINR=avg;
-            if(avg>SINR_max)
-                SINR_max=avg;
-            if(avg<SINR_min)
-                SINR_min=avg;
             avg=0;
         }
     }
@@ -508,5 +519,24 @@ void showUEsinr(vector<baseStation> BS_list){
             }
         }
         cout<<endl;
+    }
+}
+
+void initBSlist(vector<baseStation> &BS_list){
+    for(int i=0;i<BS_list.size();i++){
+        for(int j=0;j<N_band;j++){
+            BS_list[i].sub_P[j]=BS_list[i].power;
+            BS_list[i].sub_alloc[j]=-1;
+            BS_list[i].RB_pa[j]=-1;
+            BS_list[i].RB_pa_actual[j]=-1;
+        }
+        for(int j=0;j<BS_list[i].UE_list.size();j++){
+            BS_list[i].UE_list[j].avgSINR=1;
+            BS_list[i].UE_list[j].CQI=0;
+            for(int k=0;k<N_band;k++){
+                BS_list[i].UE_list[j].subbandSINR[k]=0;
+                BS_list[i].UE_list[j].subbandMask[k]=0;
+            }
+        }
     }
 }

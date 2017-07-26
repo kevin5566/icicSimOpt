@@ -53,6 +53,7 @@ struct UE{
         UePosition=c;
         pa=d;
         avgSINR=1;
+        CQI=0;
         for(int i=0;i<N_band;i++){
             subbandSINR.push_back(0);
             subbandMask.push_back(0);
@@ -78,6 +79,7 @@ struct baseStation{
         for(int i=0;i<subbandnum;i++){
             sub_P.push_back(power);
             sub_alloc.push_back(-1);
+            RB_pa.push_back(-1);
             RB_pa_actual.push_back(-1);
         }
     }
@@ -311,13 +313,15 @@ double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l);
 
 bool readInput(char* ptr, vector<baseStation> &BS_list);
 bool readInputOpt(char* ptr, vector<baseStation> &BS_list);
-void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &command);
-void cmdComboGen(vector< vector<string> > command, vector<vector<int> > &cmdIdx);
+void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &cmd);
+int cmdComboGen(vector< vector<string> > cmd, vector<vector<int> > &cmdIdx);
+void setPaCmd(vector<baseStation> &BS_list, vector< vector<string> > cmd, vector<vector<int> > cmdIdx, int round_idx);
 void RBalloc(vector<baseStation> &BS_list);
 void calcsubSINR(vector<baseStation> &BS_list);
-void calcavgSINR(vector<baseStation> &BS_list, double &SINR_max, double &SINR_min);
+void calcavgSINR(vector<baseStation> &BS_list);
 int selectCQI(double SNR_UPPERBOUND, double BLER_UPPERBOUND=0.1);
 void showUEinfo(vector<baseStation> BS_list);
 void showUEallocRB(vector<baseStation> BS_list);
 void showBSinfo(vector<baseStation> BS_list);
 void showUEsinr(vector<baseStation> BS_list);
+void initBSlist(vector<baseStation> &BS_list);
