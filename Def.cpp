@@ -17,7 +17,6 @@ double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l){
     //result=result+S;
     result=-1*result;
     result=result+BS_list[l].sub_P[k];
-    
     return result;
 }
 

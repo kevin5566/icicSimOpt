@@ -21,9 +21,9 @@ using namespace std;
 // Parameter //
 const double  c=299792458;        // Light Speed
 const double  carrierFreq=2.66*1000000000;    // (Hz) 1.9*1000000000
-const double  d_0=100.0;          // ref. Distance(m)
+const double  d_0=2.0;          // ref. Distance(m)
 const int     n=4;                // Path Loss Exponent
-const double  N_0=-174.0;         // Noise Density(dBm/Hz)
+const double  N_0=-130.0;         // Noise Density(dBm/Hz)
 const double  BW=10*1000000;      // Total BW(Hz)
 const int     N_band=50;          // Subband num
 
