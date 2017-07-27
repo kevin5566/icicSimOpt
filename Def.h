@@ -14,6 +14,10 @@ using namespace std;
 //lognormal_distribution<double> shadow_lognormal(0.0,3.16);
 //normal_distribution<double> shadow_normal(0.0,3.16);
 
+// Function //
+
+
+
 // Parameter //
 const double  c=299792458;        // Light Speed
 const double  carrierFreq=2.66*1000000000;    // (Hz) 1.9*1000000000
@@ -27,6 +31,7 @@ const double  pa_level[8]={-6,-4.77,-3,-1.77,0,1,2,3};
 
 const int level_size=106;
 const int CQI_size=15;
+const int MCS_map_size=14;
 
 const int total_RBG_num = 16;
 
@@ -42,6 +47,7 @@ struct UE{
     Position UePosition;
     double avgSINR;
     int    CQI;
+    int    MCS;
     int    pa;
     // TODO // //double RSSI;
     double RSRP;
@@ -54,6 +60,7 @@ struct UE{
         pa=d;
         avgSINR=1;
         CQI=0;
+        MCS=0;
         RSRP=65535;
         for(int i=0;i<N_band;i++){
             subbandSINR.push_back(0);
@@ -85,6 +92,26 @@ struct baseStation{
         }
     }
 };
+
+// Return strg value (i.e. Power-PathLoss, unit: dBm) //
+double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l);
+
+bool readInput(char* ptr, vector<baseStation> &BS_list);
+bool readInputOpt(char* ptr, vector<baseStation> &BS_list);
+void calcRSRP(vector<baseStation> &BS_list);
+void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &cmd);
+int cmdComboGen(vector< vector<string> > cmd, vector<vector<int> > &cmdIdx);
+void setPaCmd(vector<baseStation> &BS_list, vector< vector<string> > cmd, vector<vector<int> > cmdIdx, int round_idx);
+void RBalloc(vector<baseStation> &BS_list);
+void calcsubSINR(vector<baseStation> &BS_list);
+void calcavgSINR(vector<baseStation> &BS_list);
+int selectCQI(double SNR_UPPERBOUND, double BLER_UPPERBOUND=0.1);
+int selectMCS(double SNR);
+void showUEinfo(vector<baseStation> BS_list);
+void showUEallocRB(vector<baseStation> BS_list);
+void showBSinfo(vector<baseStation> BS_list);
+void showUEsinr(vector<baseStation> BS_list);
+void initBSlist(vector<baseStation> &BS_list);
 
 const double  SNR_CQI[level_size][CQI_size]={
     { -14.5,-12.5,-10.5,-8.5,-6.5,-4.5,-4.5,-0.5,1.5,3.5,5.5,7,8.5,10.25,12 },
@@ -307,23 +334,72 @@ const double  BLER_CQI[level_size][CQI_size]={
 const double CQI_eff[16]={0, 0.1523, 0.2344, 0.3770, 0.6016, 0.8770, 1.1758, 1.4766, 1.9141, 2.4063, 2.7305, 3.3223, 3.9023, 4.5234,5.1152, 5.5547};
 // table is follow the Table 7.2.3-1 of TS 36.213 v12.3.0
 
-// Function //
+const double SNR2MCS_range[MCS_map_size]={25.0, 23.0, 21.0, 19.0, 17.0, 15.0, 14.0, 12.0, 10.0, 9.0, 7.0, 5.0, 3.0, 0};
+const int SNR2MCS_map[MCS_map_size]={28, 26, 24, 22, 20, 17, 16, 14, 12, 10, 7, 6, 4, 2};
 
-// Return strg value (i.e. Power-PathLoss, unit: dBm) //
-double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l);
+const double MCS_TBS_50mimo[29]={2768, 3600, 4432, 5712, 7248, 8784, 10320, 12400, 13936, 15984, 15984,17520, 19824, 22896, 25920, 28224, 30528, 30528, 32832, 36672, 39696, 42768, 45840, 50912,54752, 56672, 61152, 63408, 65712};
 
-bool readInput(char* ptr, vector<baseStation> &BS_list);
-bool readInputOpt(char* ptr, vector<baseStation> &BS_list);
-void calcRSRP(vector<baseStation> &BS_list);
-void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &cmd);
-int cmdComboGen(vector< vector<string> > cmd, vector<vector<int> > &cmdIdx);
-void setPaCmd(vector<baseStation> &BS_list, vector< vector<string> > cmd, vector<vector<int> > cmdIdx, int round_idx);
-void RBalloc(vector<baseStation> &BS_list);
-void calcsubSINR(vector<baseStation> &BS_list);
-void calcavgSINR(vector<baseStation> &BS_list);
-int selectCQI(double SNR_UPPERBOUND, double BLER_UPPERBOUND=0.1);
-void showUEinfo(vector<baseStation> BS_list);
-void showUEallocRB(vector<baseStation> BS_list);
-void showBSinfo(vector<baseStation> BS_list);
-void showUEsinr(vector<baseStation> BS_list);
-void initBSlist(vector<baseStation> &BS_list);
+/*  MCS TBSidx TBS Mapping Table
+ 
+ MCS	TBSidx	PRB100	PRB50	50mimo
+ 0      0       2792	1384	2768
+ 1      1       3624	1800	3600
+ 2      2       4584	2216	4432
+ 3      3       5736	2856	5712
+ 4      4       7224	3624	7248
+ 5      5       8760	4392	8784
+ 6      6       10296	5160	10320
+ 7      7       12216	6200	12400
+ 8      8       14112	6968	13936
+ 9      9       15840	7992	15984
+ 10     9       15840	7992	15984
+ 11     10      17568	8760	17520
+ 12     11      19848	9912	19824
+ 13     12      22920	11448	22896
+ 14     13      25456	12960	25920
+ 15     14      28336	14112	28224
+ 16     15      30576	15264	30528
+ 17     15      30576	15264	30528
+ 18     16      32856	16416	32832
+ 19     17      36696	18336	36672
+ 20     18      39232	19848	39696
+ 21     19      43816	21384	42768
+ 22     20      46888	22920	45840
+ 23     21      51024	25456	50912
+ 24     22      55056	27376	54752
+ 25     23      57336	28336	56672
+ 26     24      61664	30576	61152
+ 27     25      63776	31704	63408
+ 28     26      75376	32856	65712
+*/
+
+/* SNR MCS TBS Mapping Table
+ 
+ SNR	MCS	PRB100	PRB50	50mimo
+ 0      2	4584	2216	4432
+ 1      2	4584	2216	4432
+ 2      2	4584	2216	4432
+ 3      4	7224	3624	7248
+ 4      4	7224	3624	7248
+ 5      6	10296	5160	10320
+ 6      6	10296	5160	10320
+ 7      7	12216	6200	12400
+ 8      7	12216	6200	12400
+ 9      10	15840	7992	15984
+ 10     12	19848	9912	19824
+ 11     12	19848	9912	19824
+ 12     14	25456	12960	25920
+ 13     14	25456	12960	25920
+ 14     16	30576	15264	30528
+ 15     17	30576	15264	30528
+ 16     17	30576	15264	30528
+ 17     20	39232	19848	39696
+ 18     20	39232	19848	39696
+ 19     22	46888	22920	45840
+ 20     22	46888	22920	45840
+ 21     24	55056	27376	54752
+ 22     24	55056	27376	54752
+ 23     26	61664	30576	61152
+ 24     26	61664	30576	61152
+ 25     28	75376	32856	65712
+*/

@@ -39,6 +39,11 @@ int main(int argc, char* argv[]){
             for(int j=0;j<BS_list[i].UE_list.size();j++)
                 BS_list[i].UE_list[j].CQI=selectCQI(BS_list[i].UE_list[j].avgSINR);
         
+        // Select UE MCS by SINR //
+        for(int i=0;i<BS_list.size();i++)
+            for(int j=0;j<BS_list[i].UE_list.size();j++)
+                BS_list[i].UE_list[j].MCS=selectMCS(BS_list[i].UE_list[j].avgSINR);
+        
         // Record Result//
         // TODO .... //
         showUEinfo(BS_list);
