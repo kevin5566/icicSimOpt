@@ -7,16 +7,13 @@
 #include<math.h>
 #include<iomanip>
 #include<numeric>
+#include<algorithm>
 using namespace std;
 
 // Shadow Effect //
 //default_random_engine seed1;
 //lognormal_distribution<double> shadow_lognormal(0.0,3.16);
 //normal_distribution<double> shadow_normal(0.0,3.16);
-
-// Function //
-
-
 
 // Parameter //
 const double  c=299792458;        // Light Speed
@@ -93,6 +90,25 @@ struct baseStation{
     }
 };
 
+struct UEinfo{
+    int BSidx;
+    int UEidx;
+    Position UePosition;
+    int RBnum;
+    double CQI_thrghput;
+    double MCS_thrghput;
+    UEinfo(int i, int j, Position a, int b, double c, double d){
+        BSidx=i;
+        UEidx=j;
+        UePosition=a;
+        RBnum=b;
+        CQI_thrghput=c;
+        MCS_thrghput=d;
+    }
+};
+
+// Function //
+
 // Return strg value (i.e. Power-PathLoss, unit: dBm) //
 double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l);
 
@@ -100,7 +116,7 @@ bool readInput(char* ptr, vector<baseStation> &BS_list);
 bool readInputOpt(char* ptr, vector<baseStation> &BS_list);
 void calcRSRP(vector<baseStation> &BS_list);
 void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &cmd);
-int cmdComboGen(vector< vector<string> > cmd, vector<vector<int> > &cmdIdx);
+int cmdComboGen(vector< vector<string> > cmd, vector< vector<int> > &cmdIdx);
 void setPaCmd(vector<baseStation> &BS_list, vector< vector<string> > cmd, vector<vector<int> > cmdIdx, int round_idx);
 void RBalloc(vector<baseStation> &BS_list);
 void calcsubSINR(vector<baseStation> &BS_list);
@@ -112,6 +128,8 @@ void showUEallocRB(vector<baseStation> BS_list);
 void showBSinfo(vector<baseStation> BS_list);
 void showUEsinr(vector<baseStation> BS_list);
 void initBSlist(vector<baseStation> &BS_list);
+void saveUEinfo(vector<baseStation> BS_list, vector< vector<UEinfo> > &DATA);
+void showAllresult(vector< vector<UEinfo> > DATA);
 
 const double  SNR_CQI[level_size][CQI_size]={
     { -14.5,-12.5,-10.5,-8.5,-6.5,-4.5,-4.5,-0.5,1.5,3.5,5.5,7,8.5,10.25,12 },

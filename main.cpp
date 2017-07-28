@@ -6,7 +6,8 @@ int main(int argc, char* argv[]){
     vector<baseStation> BS_list;
     vector< vector<string> > cmd;
     vector< vector<int> > cmdIdx;
-    int MAX_round=1;
+    vector< vector<UEinfo> > DATA;
+    int MAX_round=0;
     // Read Input //
     if(readInputOpt(argv[1],BS_list)==false)
         return 0;
@@ -15,11 +16,11 @@ int main(int argc, char* argv[]){
     cmdGenerate(BS_list,cmd);
     
     // Calc RSRP //
-    calcRSRP(BS_list);
+    //calcRSRP(BS_list);
     
     // Generate combination of command //
     MAX_round=cmdComboGen(cmd,cmdIdx);
-    
+    MAX_round=3;
     // Optimization Process //
     for(int round_idx=0;round_idx<MAX_round;round_idx++){
         // Set Pa command //
@@ -45,16 +46,14 @@ int main(int argc, char* argv[]){
                 BS_list[i].UE_list[j].MCS=selectMCS(BS_list[i].UE_list[j].avgSINR);
         
         // Record Result//
-        // TODO .... //
-        showUEinfo(BS_list);
+        saveUEinfo(BS_list,DATA);
         
         // Initialization //
         initBSlist(BS_list);
     }
     
-    //showUEsinr(BS_list);
-    //showUEallocRB(BS_list);
-    //showBSinfo(BS_list);
+    // Show all combination of RB cmd result //
+    showAllresult(DATA);
     
     return 0;
 }
