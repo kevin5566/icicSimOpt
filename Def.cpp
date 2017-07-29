@@ -8,8 +8,7 @@ double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l){
     // l: target BS idx
     double d=sqrt(pow(BS_list[i].UE_list[j].x-BS_list[l].x,2.0)+
                   pow(BS_list[i].UE_list[j].y-BS_list[l].y,2.0));
-    double result=20.0*log10(4.0*3.14159*d_0*carrierFreq/c);
-    result=result+10*n*log10(d/d_0);
+    double result=20.0*log10(4.0*3.14159*d_0*carrierFreq/c)+10*n*log10(d/d_0);
     //double S=shadow_normal(seed1);
     //while(S-result>-18){
     //    S=shadow_normal(seed1);
@@ -170,74 +169,83 @@ void calcRSRP(vector<baseStation> &BS_list){
     }
 }
 
-void cmdGenerate(vector<baseStation> BS_list, vector< vector<string> > &cmd) {
+void cmdGenerate(vector<baseStation> BS_list, vector<vector<string> > &cmd){
     int BSnum = BS_list.size();
-    
-    for (int i = 0; i < BSnum; i++) {
+
+    for(int i = 0; i < BSnum; i++){
         vector<string> BS_all_cmd;
         int UEnum = BS_list[i].UE_list.size();
         int centerUEnum = 0;
         int middleUEnum = 0;
         int edgeUEnum = 0;
-        
-        for (int j = 0; j < UEnum; j++) {
-            int UEposition = BS_list[i].UE_list[j].UePosition;
-            if (UEposition == 0)
-                centerUEnum++;
-            else if (UEposition == 1)
-                middleUEnum++;
-            else if (UEposition == 2)
-                edgeUEnum++;
-        }
-        
-        int avgRBGnum = total_RBG_num / UEnum;
-        int initCenterRBGnum = avgRBGnum * centerUEnum;
-        int initMiddleRBGnum = avgRBGnum * middleUEnum;
-        int initEdgeRBGnum = avgRBGnum * edgeUEnum;
-        int centerRBGnum;
-        int middleRBGnum;
-        int edgeRBGnum;
-        
-        while (1) {
-            if (initCenterRBGnum + initMiddleRBGnum + initEdgeRBGnum < total_RBG_num)
-                initCenterRBGnum++;
-            else
-                break;
-        }
-        
-        for (int m = 0; m >= 0; m++) {
-            string BScmd;
-            centerRBGnum = initCenterRBGnum + m;
-            middleRBGnum = 0;  // ...
-            edgeRBGnum = (total_RBG_num - centerRBGnum - middleRBGnum);
-            
-            if (edgeRBGnum < edgeUEnum)
-                break;
-            
-            // for the first eNB
-            if (i == 0) {
-                for (int k = 0; k < centerRBGnum; k++)
-                    BScmd.append("000");
-                for (int k = 0; k < middleRBGnum; k++)
-                    BScmd.append("444");
-                for (int k = 0; k < edgeRBGnum; k++)
-                    BScmd.append("777");
-                BScmd.append("00");
+
+        for(int j=0;j<UEnum;j++){
+            switch (BS_list[i].UE_list[j].UePosition) {
+                case CENTER:
+                    centerUEnum++;
+                    break;
+                case MIDDLE:
+                    middleUEnum++;
+                    break;
+                case EDGE:
+                    edgeUEnum++;
+                    break;
             }
-            // for the second eNB
-            else if (i == 1) {
-                for (int k = 0; k < edgeRBGnum; k++)
-                    BScmd.append("777");
-                for (int k = 0; k < middleRBGnum; k++)
-                    BScmd.append("444");
-                for (int k = 0; k < centerRBGnum; k++)
-                    BScmd.append("000");
-                BScmd.append("00");
-            }
-            
-            BS_all_cmd.push_back(BScmd);
         }
-        
+
+        int initEdgeRBGnum = (total_RBG_num / UEnum) * edgeUEnum;
+
+        // All Cell-edge UEs Case //
+        if(centerUEnum == 0 && middleUEnum == 0)
+            centerUEnum = 1;
+
+        for(int m = 0; m >= 0; m++){
+            int edgeRBGnum = initEdgeRBGnum - m;
+            int initMiddleRBGnum = ((total_RBG_num - edgeRBGnum) / (middleUEnum + centerUEnum)) * middleUEnum; 
+
+            if(edgeRBGnum < edgeUEnum)
+                break;
+
+            for(int n = 0; n >= 0; n++){
+                int middleRBGnum = initMiddleRBGnum - n;
+                int centerRBGnum = total_RBG_num - edgeRBGnum - middleRBGnum;
+
+                if(middleRBGnum > 0 && edgeRBGnum > 0)
+                    if(middleRBGnum / middleUEnum < edgeRBGnum / edgeUEnum)
+                        break;
+                
+                if(middleRBGnum < middleUEnum)
+                    break;
+
+                // Generate Single Command //
+                string BScmd;
+
+                // For the First eNB //
+                if(i == 0){
+                    for(int k = 0; k < centerRBGnum; k++)
+                        BScmd.append("000");
+                    for(int k = 0; k < middleRBGnum; k++)
+                        BScmd.append("444");
+                    for(int k = 0; k < edgeRBGnum; k++)
+                        BScmd.append("777");
+                    BScmd.append("00");
+                }
+                // For the Second eNB //
+                else if(i == 1){
+                    for(int k = 0; k < edgeRBGnum; k++)
+                        BScmd.append("777");
+                    for(int k = 0; k < middleRBGnum; k++)
+                        BScmd.append("444");
+                    for(int k = 0; k < centerRBGnum; k++)
+                        BScmd.append("000");
+                    BScmd.append("00");
+                }
+
+                BS_all_cmd.push_back(BScmd);
+
+            }            
+        }
+
         cmd.push_back(BS_all_cmd);
     }
 }
