@@ -53,7 +53,11 @@ int main(int argc, char* argv[]){
     }
     
     // Show all combination of RB cmd result //
-    showAllresult(DATA);
+    //showAllresult(DATA);
+    
+    showGJresult(DATA,cmd,cmdIdx,0);
+    showGJresult(DATA,cmd,cmdIdx,1);
+    showGJresult(DATA,cmd,cmdIdx,2);
     
     return 0;
 }

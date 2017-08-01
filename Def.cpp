@@ -468,11 +468,7 @@ int selectMCS(double SNR){
 }
 
 void showUEinfo(vector<baseStation> BS_list){
-    vector<string> p_type;
     int RBnum=0;
-    p_type.push_back("Center");
-    p_type.push_back("Middle");
-    p_type.push_back("Edge");
     cout<<"////////////////////// UE Info //////////////////////"<<endl;
     for(int i=0;i<BS_list.size();i++){
         cout<<setw(6)<<"BS idx"<<"|"<<setw(6)<<"x"<<"|"<<setw(6)<<"y"<<endl;
@@ -618,10 +614,125 @@ void showAllresult(vector< vector<UEinfo> > DATA){
                 <<setw(13)<<"MCS Thrghput"<<endl;
             cout<<setw(6)<<DATA[i][j].BSidx<<"|"
                 <<setw(6)<<DATA[i][j].UEidx<<"|"
-                <<setw(9)<<DATA[i][j].UePosition<<"|"
+                <<setw(9)<<p_type[DATA[i][j].UePosition]<<"|"
                 <<setw(6)<<DATA[i][j].RBnum<<"|"
                 <<setw(13)<<DATA[i][j].CQI_thrghput<<"|"
                 <<setw(13)<<DATA[i][j].MCS_thrghput<<endl;
         }
+    }
+}
+
+void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, vector< vector<int> > cmdIdx, int OptType){
+    vector<int> ans_idx;
+    
+    bool CQI_flag=0;
+    bool MCS_flag=0;
+    double CQI_low_bound=0;
+    double CQI_upp_bound=0;
+    double MCS_low_bound=0;
+    double MCS_upp_bound=0;
+    
+    double MAX_CQI_T=0;
+    double MAX_MCS_T=0;
+    double tmp_CQI_T=0;
+    double tmp_MCS_T=0;
+    int MAX_CQI_idx=0;
+    int MAX_MCS_idx=0;
+    
+    switch (OptType) {
+        case 1:
+            cout<<"//////// All type users achieve the similar level ////////"<<endl;
+            cout<<"//////////////////////////////////////////////////////////"<<endl;
+            for(int i=0;i<DATA.size();i++){
+                CQI_low_bound=DATA[i][0].CQI_thrghput-10;
+                CQI_upp_bound=DATA[i][0].CQI_thrghput+10;
+                MCS_low_bound=DATA[i][0].MCS_thrghput-10;
+                MCS_upp_bound=DATA[i][0].MCS_thrghput+10;
+                for(int j=0;j<DATA[i].size();j++){
+                    if(DATA[i][j].CQI_thrghput<CQI_low_bound||DATA[i][j].CQI_thrghput>CQI_upp_bound)
+                        CQI_flag=1;
+                    if(DATA[i][j].MCS_thrghput<MCS_low_bound||DATA[i][j].MCS_thrghput>MCS_upp_bound)
+                        MCS_flag=1;
+                    if(CQI_flag==1 && MCS_flag==1)
+                        break;
+                }
+                if(CQI_flag!=1 || MCS_flag!=1)
+                    ans_idx.push_back(i);
+                CQI_flag=0;
+                MCS_flag=0;
+            }
+            if(ans_idx.size()==0){
+                cout<<"/////////NO MATCHING RESULT !!/////////"<<endl;
+                return;
+            }
+            break;
+        case 2:
+            cout<<"////////////// Edge Throughput Guaranteed //////////////"<<endl;
+            cout<<"////////////////////////////////////////////////////////"<<endl;
+            for(int i=0;i<DATA.size();i++){
+                for(int j=0;j<DATA[i].size();j++){
+                    if(DATA[i][j].UePosition!=EDGE)
+                        continue;
+                    if(DATA[i][j].MCS_thrghput<10)
+                        MCS_flag=1;
+                    if(DATA[i][j].CQI_thrghput<10)
+                        CQI_flag=1;
+                    if(CQI_flag==1 && MCS_flag==1)
+                        break;
+                }
+                if(CQI_flag!=1 || MCS_flag!=1)
+                    ans_idx.push_back(i);
+                CQI_flag=0;
+                MCS_flag=0;
+            }
+            if(ans_idx.size()==0){
+                cout<<"NO MATCHING RESULT !!"<<endl;
+                return;
+            }
+            break;
+        default:
+            cout<<"/////////////// Maximum Total Throughput ///////////////"<<endl;
+            cout<<"////////////////////////////////////////////////////////"<<endl;
+            
+            for(int i=0;i<DATA.size();i++){
+                for(int j=0;j<DATA[i].size();j++){
+                    tmp_CQI_T=tmp_CQI_T+DATA[i][j].CQI_thrghput;
+                    tmp_MCS_T=tmp_MCS_T+DATA[i][j].MCS_thrghput;
+                }
+                if(tmp_CQI_T>MAX_CQI_T){
+                    MAX_CQI_T=tmp_CQI_T;
+                    MAX_CQI_idx=i;
+                }
+                if(tmp_MCS_T>MAX_MCS_T){
+                    MAX_MCS_T=tmp_MCS_T;
+                    MAX_MCS_idx=i;
+                }
+            }
+            ans_idx.push_back(MAX_CQI_idx);
+            if(MAX_MCS_idx!=MAX_CQI_idx)
+                ans_idx.push_back(MAX_MCS_idx);
+            break;
+    }
+    // Print solution in ans_idx //
+    cout<<ans_idx.size()<<" Feasible Solution Available"<<endl<<endl;
+    for(int i=0;i<ans_idx.size();i++){
+        for(int j=0;j<cmd.size();j++){
+            cout<<"eNB "<<j<<": "<<cmd[j][cmdIdx[j][ans_idx[i]]]<<endl;
+        }
+        cout<<setw(6)<<"BS idx"<<"|"
+            <<setw(6)<<"UE idx"<<"|"
+            <<setw(9)<<"Position"<<"|"
+            <<setw(6)<<"RBnum"<<"|"
+            <<setw(13)<<"CQI Thrghput"<<"|"
+            <<setw(13)<<"MCS Thrghput"<<endl;
+        for(int k=0;k<DATA[ans_idx[i]].size();k++){
+            cout<<setw(6)<<DATA[ans_idx[i]][k].BSidx<<"|"
+                <<setw(6)<<DATA[ans_idx[i]][k].UEidx<<"|"
+                <<setw(9)<<p_type[DATA[ans_idx[i]][k].UePosition]<<"|"
+                <<setw(6)<<DATA[ans_idx[i]][k].RBnum<<"|"
+                <<setw(13)<<DATA[ans_idx[i]][k].CQI_thrghput<<"|"
+                <<setw(13)<<DATA[ans_idx[i]][k].MCS_thrghput<<endl;
+        }
+        cout<<endl;
     }
 }

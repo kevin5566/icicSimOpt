@@ -38,6 +38,8 @@ typedef enum{
     EDGE=2,
 } Position;
 
+const string p_type[3]={"Center", "Middle", "Edge"};
+
 struct UE{
     double x;
     double y;
@@ -130,6 +132,7 @@ void showUEsinr(vector<baseStation> BS_list);
 void initBSlist(vector<baseStation> &BS_list);
 void saveUEinfo(vector<baseStation> BS_list, vector< vector<UEinfo> > &DATA);
 void showAllresult(vector< vector<UEinfo> > DATA);
+void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, vector< vector<int> > cmdIdx, int OptType);
 
 const double  SNR_CQI[level_size][CQI_size]={
     { -14.5,-12.5,-10.5,-8.5,-6.5,-4.5,-4.5,-0.5,1.5,3.5,5.5,7,8.5,10.25,12 },
