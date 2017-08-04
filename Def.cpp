@@ -662,7 +662,9 @@ void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, v
                 MCS_flag=0;
             }
             if(ans_idx.size()==0){
-                cout<<"/////////NO MATCHING RESULT !!/////////"<<endl;
+                cout<<endl;
+                cout<<"///////// NO MATCHING RESULT !! /////////"<<endl;
+                cout<<endl;
                 return;
             }
             break;
@@ -686,7 +688,9 @@ void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, v
                 MCS_flag=0;
             }
             if(ans_idx.size()==0){
-                cout<<"NO MATCHING RESULT !!"<<endl;
+                cout<<endl;
+                cout<<"  NO MATCHING RESULT !!  "<<endl;
+                cout<<endl;
                 return;
             }
             break;
@@ -707,6 +711,8 @@ void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, v
                     MAX_MCS_T=tmp_MCS_T;
                     MAX_MCS_idx=i;
                 }
+                tmp_CQI_T=0;
+                tmp_MCS_T=0;
             }
             ans_idx.push_back(MAX_CQI_idx);
             if(MAX_MCS_idx!=MAX_CQI_idx)

@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
     
     // Generate combination of command //
     MAX_round=cmdComboGen(cmd,cmdIdx);
-    MAX_round=3;
+    //MAX_round=3;
     // Optimization Process //
     for(int round_idx=0;round_idx<MAX_round;round_idx++){
         // Set Pa command //
