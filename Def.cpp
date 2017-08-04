@@ -662,8 +662,7 @@ void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, v
                 MCS_flag=0;
             }
             if(ans_idx.size()==0){
-                cout<<endl;
-                cout<<"///////// NO MATCHING RESULT !! /////////"<<endl;
+                cout<<"///////////////// NO MATCHING RESULT !! //////////////////"<<endl;
                 cout<<endl;
                 return;
             }
@@ -688,8 +687,7 @@ void showGJresult(vector< vector<UEinfo> > DATA, vector< vector<string> > cmd, v
                 MCS_flag=0;
             }
             if(ans_idx.size()==0){
-                cout<<endl;
-                cout<<"  NO MATCHING RESULT !!  "<<endl;
+                cout<<"//////////////  NO MATCHING RESULT !! //////////////"<<endl;
                 cout<<endl;
                 return;
             }

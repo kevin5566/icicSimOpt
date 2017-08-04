@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
     
     // Generate combination of command //
     MAX_round=cmdComboGen(cmd,cmdIdx);
-    //MAX_round=3;
+    MAX_round=3;
     // Optimization Process //
     for(int round_idx=0;round_idx<MAX_round;round_idx++){
         // Set Pa command //
@@ -55,8 +55,13 @@ int main(int argc, char* argv[]){
     // Show all combination of RB cmd result //
     //showAllresult(DATA);
     
-    showGJresult(DATA,cmd,cmdIdx,0);
+    // Show Feasible Pa Cmd in Different Criteria //
+    
+    // Default: Maximum Total Throughput //
+    showGJresult(DATA,cmd,cmdIdx);
+    // 1      : All type users achieve the similar level //
     showGJresult(DATA,cmd,cmdIdx,1);
+    // 2      : Edge Throughput Guaranteed //
     showGJresult(DATA,cmd,cmdIdx,2);
     
     return 0;
