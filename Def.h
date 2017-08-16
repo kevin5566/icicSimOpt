@@ -49,7 +49,7 @@ struct UE{
     int    MCS;
     int    pa;
     // TODO // //double RSSI;
-    double RSRP;
+    vector<double> RSRP;
     vector<double> subbandSINR;
     vector<bool> subbandMask;   //0: no use; 1: used
     UE(double a, double b, Position c, int d){
@@ -60,7 +60,6 @@ struct UE{
         avgSINR=1;
         CQI=0;
         MCS=0;
-        RSRP=65535;
         for(int i=0;i<N_band;i++){
             subbandSINR.push_back(0);
             subbandMask.push_back(0);
@@ -129,6 +128,7 @@ void showUEinfo(vector<baseStation> BS_list);
 void showUEallocRB(vector<baseStation> BS_list);
 void showBSinfo(vector<baseStation> BS_list);
 void showUEsinr(vector<baseStation> BS_list);
+void showUERSRP(vector<baseStation> BS_list);
 void initBSlist(vector<baseStation> &BS_list);
 void saveUEinfo(vector<baseStation> BS_list, vector< vector<UEinfo> > &DATA);
 void showAllresult(vector< vector<UEinfo> > DATA);

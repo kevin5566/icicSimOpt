@@ -164,7 +164,9 @@ bool readInputOpt(char* ptr, vector<baseStation> &BS_list){
 void calcRSRP(vector<baseStation> &BS_list){
     for(int i=0;i<BS_list.size();i++){
         for(int j=0;j<BS_list[i].UE_list.size();j++){
-            BS_list[i].UE_list[j].RSRP=getStrg(BS_list,i,j,0,i);
+            for(int k=0;k<BS_list.size();k++){
+                BS_list[i].UE_list[j].RSRP.push_back(getStrg(BS_list,i,j,0,k));
+            }
         }
     }
 }
@@ -478,7 +480,6 @@ void showUEinfo(vector<baseStation> BS_list){
             <<setw(6)<<"y"<<"|"
             <<setw(9)<<"d_to_eNB"<<"|"
             <<setw(9)<<"Position"<<"|"
-            <<setw(9)<<"RSRP"<<"|"
             <<setw(10)<<"avgSINR"<<"|"
             <<setw(4)<<"CQI"<<"|"
             <<setw(4)<<"MCS"<<"|"
@@ -493,7 +494,6 @@ void showUEinfo(vector<baseStation> BS_list){
                 <<setw(6)<<BS_list[i].UE_list[j].y<<"|"
                 <<setw(9)<<sqrt(pow(BS_list[i].UE_list[j].x-BS_list[i].x,2.0)+pow(BS_list[i].UE_list[j].y-BS_list[i].y,2.0))<<"|"
                 <<setw(9)<<p_type[(int)BS_list[i].UE_list[j].UePosition]<<"|"
-                <<setw(9)<<BS_list[i].UE_list[j].RSRP<<"|"
                 <<setw(10)<<BS_list[i].UE_list[j].avgSINR<<"|"
                 <<setw(4)<<BS_list[i].UE_list[j].CQI<<"|"
                 <<setw(4)<<BS_list[i].UE_list[j].MCS<<"|"
@@ -567,6 +567,22 @@ void showUEsinr(vector<baseStation> BS_list){
         }
         cout<<endl;
     }
+}
+
+void showUERSRP(vector<baseStation> BS_list){
+    for(int i=0;i<BS_list.size();i++){
+        cout<<setw(6)<<"BS idx"<<":"<<setw(3)<<i<<endl;
+        cout<<setw(6)<<"UE idx"<<"|  RSRP"<<endl;
+        for(int j=0;j<BS_list[i].UE_list.size();j++){
+            cout<<setw(6)<<j<<"|";
+            for(int k=0;k<BS_list[i].UE_list[j].RSRP.size();k++){
+                cout<<setw(9)<<BS_list[i].UE_list[j].RSRP[k]<<"|";
+            }
+            cout<<endl;
+        }
+        cout<<endl;
+    }
+    
 }
 
 void initBSlist(vector<baseStation> &BS_list){
