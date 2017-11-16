@@ -111,7 +111,7 @@ struct UEinfo{
 // Function //
 
 // Return strg value (i.e. Power-PathLoss, unit: dBm) //
-double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l);
+double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l, bool isRS);
 
 bool readInput(char* ptr, vector<baseStation> &BS_list);
 bool readInputOpt(char* ptr, vector<baseStation> &BS_list);
@@ -357,7 +357,7 @@ const double CQI_eff[16]={0, 0.1523, 0.2344, 0.3770, 0.6016, 0.8770, 1.1758, 1.4
 
 const double SNR2MCS_range[MCS_map_size]={
     25.0, 24.0, 23.0, 22.0, 21.0,
-    20,0, 19.0, 18.0, 17.0, 16.5,
+    20.0, 19.0, 18.0, 17.0, 16.5,
     15.5, 14.5, 14.0, 13.0, 12.0,
     11.0, 10.0, 9.5,  9.0,  7.0,
     5.0,  3.0,  0 };

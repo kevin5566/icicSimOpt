@@ -15,7 +15,7 @@ double getStrg(vector<baseStation> BS_list, int i, int j, int k, int l){
     //}
     //result=result+S;
     result=-1*result;
-    result=result+BS_list[l].sub_P[k];
+    result=result+isRS*BS_list[l].power+(~isRS)*BS_list[l].sub_P[k];
     return result;
 }
 
@@ -165,7 +165,7 @@ void calcRSRP(vector<baseStation> &BS_list){
     for(int i=0;i<BS_list.size();i++){
         for(int j=0;j<BS_list[i].UE_list.size();j++){
             for(int k=0;k<BS_list.size();k++){
-                BS_list[i].UE_list[j].RSRP.push_back(getStrg(BS_list,i,j,0,k));
+                BS_list[i].UE_list[j].RSRP.push_back(getStrg(BS_list,i,j,0,k,1));
             }
         }
     }
@@ -415,9 +415,9 @@ void calcsubSINR(vector<baseStation> &BS_list){
                     else{
                         // RB used interference strg up //
                         if(BS_list[l].sub_alloc[k]==-1) // only RS
-                            i_tmp=i_tmp+strg_weight_RS*pow(10,getStrg(BS_list,i,j,k,l)/10);
+                            i_tmp=i_tmp+strg_weight_RS*pow(10,getStrg(BS_list,i,j,k,l,1)/10);
                         else
-                            i_tmp=i_tmp+pow(10,getStrg(BS_list,i,j,k,l)/10);
+                            i_tmp=i_tmp+strg_weight_RS*pow(10,getStrg(BS_list,i,j,k,l,1)/10)+(1-strg_weight_RS)*pow(10,getStrg(BS_list,i,j,k,l,0)/10);
                     }
                     
                 }
